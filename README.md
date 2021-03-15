@@ -1,2 +1,2 @@
-# coinex-api
-Stand alone modules for CoinEx API
+# CoinEx-api
+Stand-alone python modules for CoinEx API
