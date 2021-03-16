@@ -43,11 +43,11 @@ class Api:
 
     def _sign(self, data):
         string_to_sign = ''
-        for k, v in sorted(data):
+        for k, v in sorted(data.items()):
             string_to_sign += f'{k}={v}&'
         string_to_sign += f'secret_key={self.secret_key}'
         sign = hashlib.md5(string_to_sign.encode('utf-8')).hexdigest()
-        return sign
+        return sign.upper()
 
     def _check_results(self, res):
         if res.status_code != 200:
@@ -74,6 +74,7 @@ class Api:
     def place_limit_order(self, ticker: str, price: float,
                           amount: int, side: str
                           ):
+        time.sleep(API_WAIT_TIME)
         headers = self._headers
         payload = {
             "access_id": self.access_id,
@@ -83,10 +84,59 @@ class Api:
             "market": ticker,  # market type
             "tonce": self.ts,
         }
-        time.sleep(API_WAIT_TIME)
+        headers['Authorization'] = self._sign(payload)
         res = requests.post(
             url=f'{URL_API}order/limit',
             headers=headers,
             json=payload
+        )
+        return self._check_results(res)
+
+    def check_order_status(self, order_id: int, ticker: str):
+        time.sleep(API_WAIT_TIME)
+        headers = self._headers
+        payload = {
+            "access_id": self.access_id,
+            "id": order_id,
+            "market": ticker,
+            "tonce": self.ts,
+        }
+        headers['Authorization'] = self._sign(payload)
+        res = requests.get(
+            url=f'{URL_API}order/status',
+            headers=headers,
+            params=payload
+        )
+        return self._check_results(res)
+
+    def balance_info(self):
+        time.sleep(API_WAIT_TIME)
+        headers = self._headers
+        payload = {
+            "access_id": self.access_id,
+            "tonce": self.ts,
+        }
+        headers['Authorization'] = self._sign(payload)
+        res = requests.get(
+            url=f'{URL_API}balance/info',
+            headers=headers,
+            params=payload
+        )
+        return self._check_results(res)
+
+    def cancel_all_orders(self, ticker, account_id: int = 0):
+        time.sleep(API_WAIT_TIME)
+        headers = self._headers
+        payload = {
+            "access_id": self.access_id,
+            "account_id": account_id,
+            "market": ticker,
+            "tonce": self.ts,
+        }
+        headers['Authorization'] = self._sign(payload)
+        res = requests.delete(
+            url=f'{URL_API}order/pending',
+            headers=headers,
+            params=payload
         )
         return self._check_results(res)
