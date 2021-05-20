@@ -1,12 +1,16 @@
 import hashlib
 import time
 
-from settings import ACCESS_ID, SECRET_KEY, API_WAIT_TIME, URL_API, LOGGING
+from settings import (
+    ACCESS_ID, SECRET_KEY, API_WAIT_TIME, URL_API, LOGGING,
+    TIMEOUT
+)
 import requests
 import json
 import logging
 from json import JSONDecodeError
 from datetime import datetime
+
 
 if LOGGING:
     logging.basicConfig(
@@ -68,7 +72,9 @@ class Api:
         time.sleep(API_WAIT_TIME)
         res = requests.get(
             url=f'{URL_API}market/ticker',
-            params={'market': ticker})
+            params={'market': ticker},
+            timeout=TIMEOUT,
+        )
         return self._check_results(res)
 
     def place_limit_order(self, ticker: str, price: float,
@@ -105,7 +111,8 @@ class Api:
         res = requests.get(
             url=f'{URL_API}order/status',
             headers=headers,
-            params=payload
+            params=payload,
+            timeout=TIMEOUT,
         )
         return self._check_results(res)
 
@@ -120,7 +127,8 @@ class Api:
         res = requests.get(
             url=f'{URL_API}balance/info',
             headers=headers,
-            params=payload
+            params=payload,
+            timeout=TIMEOUT,
         )
         return self._check_results(res)
 

@@ -18,7 +18,7 @@ def get_middle(ticker_load):
 
 
 def get_ammount():
-    r = random.randint(5000000, 15000000)
+    r = random.randint(10000000, 15000000)
     return r / 1000000
 
 
