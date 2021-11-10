@@ -6,7 +6,7 @@ log.setLevel(logging.DEBUG)
 
 file_handler = logging.handlers.RotatingFileHandler(
     'logs/debug.log',
-    maxBytes=1000000,
+    maxBytes=5000000,
     backupCount=5
 )
 ch = logging.StreamHandler()

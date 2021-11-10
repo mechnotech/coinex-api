@@ -89,9 +89,9 @@ def wait_order_change(order, order_price):
         info = f'{cnt} Ожидаю исполнения: моя цена {order_price},' \
                f' лучший sell {sell}, ордер статус {check}, спрэд {spread}%'
         log.info(info)
-        cnt += 1
         if cnt % 60 == 0:
             log.warning(info)
+        cnt += 1
         if check == 'done' or check == 'cancel':
             log.warning(f'Ордер #{order_id} исполнен! {datetime.now()}')
             return
