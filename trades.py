@@ -93,10 +93,10 @@ def wait_order_change(order, order_price):
         if cnt % 60 == 0:
             log.warning(info)
         if check == 'done' or check == 'cancel':
-            log.warninig(f'Ордер #{order_id} исполнен! {datetime.now()}')
+            log.warning(f'Ордер #{order_id} исполнен! {datetime.now()}')
             return
         elif sell < order_price:
-            log.warninig('Цена сдвинулась ниже ордера')
+            log.warning('Цена сдвинулась ниже ордера')
             return
 
 
