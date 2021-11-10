@@ -1,5 +1,6 @@
 import hashlib
 import time
+from typing import Optional
 
 from settings import (
     ACCESS_ID, SECRET_KEY, API_WAIT_TIME, URL_API, LOGGING,
@@ -7,19 +8,9 @@ from settings import (
 )
 import requests
 import json
-import logging
+from logger import log
 from json import JSONDecodeError
 from datetime import datetime
-
-
-if LOGGING:
-    logging.basicConfig(
-        filename='debug.log',
-        filemode='a',
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%d-%b-%y %H:%M:%S',
-        level=logging.ERROR
-    )
 
 
 class Api:
@@ -36,14 +27,16 @@ class Api:
 
     @property
     def ts(self):
-        now = datetime.now()
-        return datetime.timestamp(now)
+        now = int(datetime.now().timestamp() * 1000)
+
+        return now + self.ts_shift
 
     def __init__(self, access_id=ACCESS_ID, secret_key=SECRET_KEY,
                  api_url=URL_API):
         self.access_id = access_id
         self.secret_key = secret_key
         self.api_url = api_url
+        self.ts_shift = 0
 
     def _sign(self, data):
         string_to_sign = ''
@@ -57,7 +50,7 @@ class Api:
         if res.status_code != 200:
             self.error = True
             if LOGGING:
-                logging.error(f'Ошибка: {res.status_code} {res.text}')
+                log.error(f'Ошибка: {res.status_code} {res.text}')
             return
         try:
             result = json.loads(res.content)
@@ -66,7 +59,7 @@ class Api:
         except JSONDecodeError as e:
             self.error = True
             if LOGGING:
-                logging.error(f'Ошибка декодирования JSON: {e}')
+                log.error(f'Ошибка декодирования JSON: {e}')
 
     def show_pair(self, ticker: str):
         time.sleep(API_WAIT_TIME)
@@ -75,10 +68,13 @@ class Api:
             params={'market': ticker},
             timeout=TIMEOUT,
         )
-        return self._check_results(res)
+        results = self._check_results(res)
+        if results.get('data').get('date'):
+            self.ts_shift = results.get('data').get('date') - self.ts
+        return results
 
     def place_limit_order(self, ticker: str, price: float,
-                          amount: int, side: str
+                          amount: Optional[float], side: str
                           ):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
