@@ -1,16 +1,20 @@
 import hashlib
+import json
 import time
+from datetime import datetime
+from json import JSONDecodeError
 from typing import Optional
 
+import requests
+
+from backoff import backoff
+from logger import log
 from settings import (
     ACCESS_ID, SECRET_KEY, API_WAIT_TIME, URL_API, LOGGING,
     TIMEOUT
 )
-import requests
-import json
-from logger import log
-from json import JSONDecodeError
-from datetime import datetime
+
+log = log.getChild('client')
 
 
 class Api:
@@ -28,7 +32,6 @@ class Api:
     @property
     def ts(self):
         now = int(datetime.now().timestamp() * 1000)
-
         return now + self.ts_shift
 
     def __init__(self, access_id=ACCESS_ID, secret_key=SECRET_KEY,
@@ -61,6 +64,7 @@ class Api:
             if LOGGING:
                 log.error(f'Ошибка декодирования JSON: {e}')
 
+    @backoff(logy=log)
     def show_pair(self, ticker: str):
         time.sleep(API_WAIT_TIME)
         res = requests.get(
@@ -73,6 +77,7 @@ class Api:
             self.ts_shift = results.get('data').get('date') - self.ts
         return results
 
+    @backoff(logy=log)
     def place_limit_order(self, ticker: str, price: float,
                           amount: Optional[float], side: str
                           ):
@@ -94,6 +99,7 @@ class Api:
         )
         return self._check_results(res)
 
+    @backoff(logy=log)
     def check_order_status(self, order_id: int, ticker: str):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
@@ -112,6 +118,7 @@ class Api:
         )
         return self._check_results(res)
 
+    @backoff(logy=log)
     def balance_info(self):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
@@ -128,6 +135,7 @@ class Api:
         )
         return self._check_results(res)
 
+    @backoff(logy=log)
     def cancel_all_orders(self, ticker, account_id: int = 0):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
