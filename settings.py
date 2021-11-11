@@ -1,9 +1,18 @@
+import logging
+
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
+VERBOSITY_LEVELS = {
+    0: logging.WARNING,
+    1: logging.INFO,
+    2: logging.DEBUG
+}
 LOGGING = True
+DEBUG = False
+VERBOSITY = 0
 
 API_WAIT_TIME = 0.11
 ACCESS_ID = os.getenv('ACCESS_ID')

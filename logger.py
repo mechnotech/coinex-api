@@ -1,8 +1,9 @@
 import logging.handlers
 
+from settings import DEBUG, VERBOSITY_LEVELS, VERBOSITY
 
 log = logging.getLogger('log')
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.DEBUG if DEBUG else logging.INFO)
 
 file_handler = logging.handlers.RotatingFileHandler(
     'logs/debug.log',
@@ -10,7 +11,7 @@ file_handler = logging.handlers.RotatingFileHandler(
     backupCount=5
 )
 ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
+ch.setLevel(VERBOSITY_LEVELS[VERBOSITY])
 fmtstr = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 fmtdate = '%H:%M:%S'
 formatter = logging.Formatter(fmtstr, fmtdate)
