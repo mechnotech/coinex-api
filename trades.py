@@ -1,11 +1,11 @@
+import time
+
 from logger import log
 
 from client import Api
-from settings import TICKER
+from settings import TICKER, MIN_PRICE
 import random
 from datetime import datetime
-
-MIN_PRICE = 0.0000002 if TICKER == 'EMCBTC' else 0.01
 
 
 def get_middle(ticker_load):
@@ -14,12 +14,12 @@ def get_middle(ticker_load):
     sell = float(data.get('sell'))
     middle = round((buy + sell) / 2, 10)
 
-    log.info(f'покупка: {buy}, продажа:{sell}, середина спреда: {middle}')
+    log.info(f'покупка: {buy}, продажа:{sell}, середина спрэда: {middle}')
 
     return middle
 
 
-def get_ammount():
+def get_amount():
     r = random.randint(10000000, 15000000)
     return r / 200000
 
@@ -39,16 +39,16 @@ def get_best_buy(ticker_load):
 def get_order_id(order_resp):
     try:
         return order_resp['data']['id']
-    except Exception:
-        log.exception(f'Не могу получить ID ордера - {order_resp}')
+    except Exception as e:
+        log.exception(f'Не могу получить ID ордера - {order_resp}, ошибка - {e}')
         return None
 
 
 def check_status(order_resp):
     try:
         return order_resp['data']['status']
-    except Exception:
-        log.exception(f'Не могу получить статус ордера - {order_resp}')
+    except Exception as e:
+        log.exception(f'Не могу получить статус ордера - {order_resp}, ошибка - {e}')
         return None
 
 
@@ -113,24 +113,32 @@ def is_balance_empty():
 
 
 def main_loop():
-    ticker = coinex.show_pair(TICKER)
-    mid_price = get_middle(ticker)
-    while not is_price_above(mid_price):
-        ticker = coinex.show_pair(TICKER)
-        mid_price = get_middle(ticker)
+    while True:
+
+        while True:
+            if is_balance_empty():
+                log.error('Баланс исчерпан!')
+                time.sleep(60)
+            else:
+                break
+
+        while True:
+            ticker = coinex.show_pair(TICKER)
+            mid_price = get_middle(ticker)
+            if is_price_above(mid_price):
+                log.warning(f'Цена({mid_price}) ниже целевого значения: {MIN_PRICE}')
+                time.sleep(60)
+            else:
+                break
 
         my_order = coinex.place_limit_order(
             ticker=TICKER,
             price=mid_price,
-            amount=get_ammount(),
+            amount=get_amount(),
             side='sell'
         )
-        if is_balance_empty():
-            log.error('Баланс исчерпан!')
-            return
-        # Ждем исполнения ордера или смещения спреда ниже ордера
+
         wait_order_change(order=my_order, order_price=mid_price)
-    log.info(f'Цена({mid_price}) ниже целевого значения: {MIN_PRICE}')
 
 
 if __name__ == '__main__':

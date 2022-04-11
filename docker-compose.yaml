@@ -1,0 +1,8 @@
+version: '3.5'
+services:
+  trader_coinex:  # Optional USDT_BTC
+    build: .
+    container_name: trader_coinex # Optional USDT_BTC
+    env_file:
+      - .env
+    restart: unless-stopped
