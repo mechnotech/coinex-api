@@ -53,7 +53,7 @@ class Api:
         if res.status_code != 200:
             self.error = True
             if LOGGING:
-                log.error(f'Ошибка: {res.status_code} {res.text}')
+                log.error(f'Ошибка: {res.status_code}')
             return
         try:
             result = json.loads(res.content)
