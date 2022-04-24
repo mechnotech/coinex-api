@@ -3,7 +3,7 @@ import time
 from logger import log
 
 from client import Api
-from settings import TICKER, MIN_PRICE
+from settings import TICKER, BORDER_PRICE, DIRECTION
 import random
 from datetime import datetime
 
@@ -46,6 +46,9 @@ def get_order_id(order_resp):
 
 def check_status(order_resp):
     try:
+        if not order_resp['data']:
+            log.exception(f'Error code {order_resp["code"]}, {order_resp["message"]}')
+            return None
         return order_resp['data']['status']
     except Exception as e:
         log.exception(f'Не могу получить статус ордера - {order_resp}, ошибка - {e}')
@@ -63,7 +66,7 @@ def spread_percent(ticker_load):
 
 
 def is_price_above(price):
-    return price < MIN_PRICE
+    return price < BORDER_PRICE
 
 
 def wait_order_change(order, order_price):
@@ -80,6 +83,7 @@ def wait_order_change(order, order_price):
             log.exception(f'Ошибка соединения: {e}')
             continue
         sell = get_best_sell(pair)
+        buy = get_best_buy(pair)
         spread = spread_percent(pair)
         if not spread:
             log.info(f'Не могу получить спред - spread, {cnt}')
@@ -95,8 +99,11 @@ def wait_order_change(order, order_price):
         if check == 'done' or check == 'cancel':
             log.warning(f'Ордер #{order_id} исполнен! {datetime.now()}')
             return
-        elif sell < order_price:
+        elif DIRECTION == 'sell' and sell < order_price:
             log.warning('Цена сдвинулась ниже ордера')
+            return
+        elif DIRECTION == 'buy' and buy > order_price:
+            log.warning('Цена сдвинулась выше ордера')
             return
 
 
@@ -104,6 +111,8 @@ def is_balance_empty():
     while True:
         balance = coinex.balance_info()
         log.warning(f' Баланс: {balance}')
+        if balance['code'] == 277:
+            exit()
         if balance['code'] == 0:
             amount = float(balance['data']['EMC']['available'])
             if amount < 60:
@@ -125,18 +134,20 @@ def main_loop():
         while True:
             ticker = coinex.show_pair(TICKER)
             mid_price = get_middle(ticker)
-            if is_price_above(mid_price):
-                log.warning(f'Цена({mid_price}) ниже целевого значения: {MIN_PRICE}')
+            if DIRECTION == 'sell' and is_price_above(mid_price):
+                log.warning(f'Цена({mid_price}) продажи ниже целевого значения: {BORDER_PRICE}')
                 time.sleep(60)
+            elif DIRECTION == 'buy' and not is_price_above(mid_price):
+                log.warning(f'Цена({mid_price}) покупки выше порогового значения: {BORDER_PRICE}')
             else:
                 break
-
-        my_order = coinex.place_limit_order(
-            ticker=TICKER,
-            price=mid_price,
-            amount=get_amount(),
-            side='sell'
-        )
+        order = {'ticker': TICKER,
+                 'price': mid_price,
+                 'amount': get_amount(),
+                 'side': DIRECTION
+                 }
+        my_order = coinex.place_limit_order(**order)
+        log.warning(f'Выставлен ордер - {order}')
 
         wait_order_change(order=my_order, order_price=mid_price)
 
