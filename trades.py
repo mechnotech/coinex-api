@@ -111,7 +111,7 @@ def is_balance_empty():
     while True:
         balance = coinex.balance_info()
         log.warning(f' Баланс: {balance}')
-        if balance['code'] == 277:
+        if balance['code'] == 227:
             exit()
         if balance['code'] == 0:
             amount = float(balance['data']['EMC']['available'])
