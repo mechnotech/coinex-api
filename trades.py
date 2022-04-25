@@ -108,6 +108,7 @@ def wait_order_change(order, order_price):
 
 
 def is_balance_empty():
+
     while True:
         balance = coinex.balance_info()
         if balance['code'] == 227:
@@ -134,16 +135,24 @@ def main_loop():
             else:
                 break
 
+        cnt = 0
         while True:
             ticker = coinex.show_pair(TICKER)
             mid_price = get_middle(ticker)
             if DIRECTION == 'sell' and is_price_above(mid_price):
-                log.warning(f'Цена({mid_price}) продажи ниже целевого значения: {BORDER_PRICE}')
-                time.sleep(60)
+                cnt += 1
+                if cnt > 60:
+                    log.warning(f'Цена({mid_price}) продажи ниже целевого значения: {BORDER_PRICE}')
+                cnt = 0
+
             elif DIRECTION == 'buy' and not is_price_above(mid_price):
-                log.warning(f'Цена({mid_price}) покупки выше порогового значения: {BORDER_PRICE}')
+                cnt += 1
+                if cnt > 60:
+                    log.warning(f'Цена({mid_price}) покупки выше порогового значения: {BORDER_PRICE}')
+                    cnt = 0
             else:
                 break
+
         order = {'ticker': TICKER,
                  'price': mid_price,
                  'amount': get_amount(),
