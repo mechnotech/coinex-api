@@ -110,11 +110,14 @@ def wait_order_change(order, order_price):
 def is_balance_empty():
     while True:
         balance = coinex.balance_info()
-        log.warning(f' Баланс: {balance}')
         if balance['code'] == 227:
             exit()
         if balance['code'] == 0:
-            amount = float(balance['data']['EMC']['available'])
+            log.warning(f' Баланс: {balance["data"]}')
+            if DIRECTION == 'sell':
+                amount = float(balance['data']['EMC']['available'])
+            else:
+                amount = float(balance['data']['USDT']['available'])
             if amount < 60:
                 return True
             else:

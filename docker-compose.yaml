@@ -4,12 +4,16 @@ services:
     build: .
     container_name: sell_trader # Optional USDT_BTC
     env_file:
-      - .env
+      - .env2
     restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   buy_trader:
     build: .
     container_name: buy_trader
     env_file:
-      - .env2
+      - .env
     restart: unless-stopped
+    volumes:
+      - /etc/localtime:/etc/localtime:ro

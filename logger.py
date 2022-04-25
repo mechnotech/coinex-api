@@ -13,7 +13,7 @@ file_handler = logging.handlers.RotatingFileHandler(
 ch = logging.StreamHandler()
 ch.setLevel(VERBOSITY_LEVELS[VERBOSITY])
 fmtstr = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-fmtdate = '%H:%M:%S'
+fmtdate = '%Y-%m-%d %H:%M:%S'
 formatter = logging.Formatter(fmtstr, fmtdate)
 file_handler.setFormatter(formatter)
 ch.setFormatter(formatter)
