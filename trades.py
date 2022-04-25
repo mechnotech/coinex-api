@@ -135,21 +135,22 @@ def main_loop():
             else:
                 break
 
-        cnt = 0
+        cnt_s = 0
+        cnt_b = 0
         while True:
             ticker = coinex.show_pair(TICKER)
             mid_price = get_middle(ticker)
             if DIRECTION == 'sell' and is_price_above(mid_price):
-                cnt += 1
-                if cnt > 60:
+                cnt_s += 1
+                if cnt_s > 60:
                     log.warning(f'Цена({mid_price}) продажи ниже целевого значения: {BORDER_PRICE}')
-                cnt = 0
+                    cnt_s = 0
 
             elif DIRECTION == 'buy' and not is_price_above(mid_price):
-                cnt += 1
-                if cnt > 60:
+                cnt_b += 1
+                if cnt_b > 60:
                     log.warning(f'Цена({mid_price}) покупки выше порогового значения: {BORDER_PRICE}')
-                    cnt = 0
+                    cnt_b = 0
             else:
                 break
 
