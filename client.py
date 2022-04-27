@@ -12,7 +12,7 @@ import backoff
 from logger import log
 from settings import (
     ACCESS_ID, SECRET_KEY, API_WAIT_TIME, URL_API, LOGGING,
-    TIMEOUT
+    TIMEOUT, HIDDEN
 )
 
 log = log.getChild('client')
@@ -91,7 +91,7 @@ class Api:
             "type": side,  # order type
             "market": ticker,  # market type
             "tonce": self.ts,
-            "hide": True
+            "hide": HIDDEN
         }
         headers['Authorization'] = self._sign(payload)
         res = requests.post(

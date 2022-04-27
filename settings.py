@@ -21,5 +21,6 @@ TICKER = os.getenv('TICKER')
 BORDER_PRICE = float(os.getenv('BORDER_PRICE', 0.04))
 DIRECTION = os.getenv('DIRECTION', 'buy')
 TIMEOUT = 10.0
+HIDDEN = True if os.getenv('HIDDEN') == True else False
 
 URL_API = 'https://api.coinex.com/v1/'
