@@ -3,7 +3,7 @@ import time
 from logger import log
 
 from client import Api
-from settings import TICKER, BORDER_PRICE, DIRECTION
+from settings import TICKER, BORDER_PRICE, DIRECTION, DROP_ORDERS
 import random
 from datetime import datetime
 
@@ -167,5 +167,6 @@ def main_loop():
 
 if __name__ == '__main__':
     coinex = Api()
-    log.info(coinex.cancel_all_orders(ticker=TICKER))
+    if DROP_ORDERS:
+        log.info(coinex.cancel_all_orders(ticker=TICKER))
     main_loop()
