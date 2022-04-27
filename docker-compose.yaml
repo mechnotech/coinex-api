@@ -1,8 +1,8 @@
 version: '3.5'
 services:
-  sell_trader:  # Optional USDT_BTC
+  sell_trader:  # Optional SELL_USDT_BTC
     build: .
-    container_name: sell_trader # Optional USDT_BTC
+    container_name: sell_trader # SELL_Optional USDT_BTC
     env_file:
       - .env2
     restart: unless-stopped

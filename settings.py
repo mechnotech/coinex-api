@@ -12,9 +12,9 @@ VERBOSITY_LEVELS = {
 }
 LOGGING = True
 DEBUG = False
-VERBOSITY = 0
+VERBOSITY = int(os.getenv('VERBOSITY', 0))
 
-API_WAIT_TIME = 0.11
+API_WAIT_TIME = float(os.getenv('API_WAIT_TIME', 0.07))
 ACCESS_ID = os.getenv('ACCESS_ID')
 SECRET_KEY = os.getenv('SECRET_KEY')
 TICKER = os.getenv('TICKER')

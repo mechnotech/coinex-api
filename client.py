@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import time
 from datetime import datetime
 from json import JSONDecodeError
@@ -7,7 +8,7 @@ from typing import Optional
 
 import requests
 
-from backoff import backoff
+import backoff
 from logger import log
 from settings import (
     ACCESS_ID, SECRET_KEY, API_WAIT_TIME, URL_API, LOGGING,
@@ -64,7 +65,7 @@ class Api:
             if LOGGING:
                 log.error(f'Ошибка декодирования JSON: {e}')
 
-    @backoff(logy=log)
+    @backoff.on_exception(backoff.fibo, Exception, logger=log, max_value=10, backoff_log_level=logging.WARNING)
     def show_pair(self, ticker: str):
         time.sleep(API_WAIT_TIME)
         res = requests.get(
@@ -77,7 +78,7 @@ class Api:
             self.ts_shift = results.get('data').get('date') - self.ts
         return results
 
-    @backoff(logy=log)
+    @backoff.on_exception(backoff.fibo, Exception, logger=log, max_value=10, backoff_log_level=logging.WARNING)
     def place_limit_order(self, ticker: str, price: float,
                           amount: Optional[float], side: str
                           ):
@@ -90,6 +91,7 @@ class Api:
             "type": side,  # order type
             "market": ticker,  # market type
             "tonce": self.ts,
+            "hide": True
         }
         headers['Authorization'] = self._sign(payload)
         res = requests.post(
@@ -99,7 +101,7 @@ class Api:
         )
         return self._check_results(res)
 
-    @backoff(logy=log)
+    @backoff.on_exception(backoff.fibo, Exception, logger=log, max_value=10, backoff_log_level=logging.WARNING)
     def check_order_status(self, order_id: int, ticker: str):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
@@ -118,7 +120,7 @@ class Api:
         )
         return self._check_results(res)
 
-    @backoff(logy=log)
+    @backoff.on_exception(backoff.fibo, Exception, logger=log, max_value=10, backoff_log_level=logging.WARNING)
     def balance_info(self):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
@@ -135,7 +137,7 @@ class Api:
         )
         return self._check_results(res)
 
-    @backoff(logy=log)
+    @backoff.on_exception(backoff.fibo, Exception, logger=log, max_value=10, backoff_log_level=logging.WARNING)
     def cancel_all_orders(self, ticker, account_id: int = 0):
         time.sleep(API_WAIT_TIME)
         headers = self._headers
