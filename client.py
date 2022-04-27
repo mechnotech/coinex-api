@@ -63,7 +63,7 @@ class Api:
         except JSONDecodeError as e:
             self.error = True
             if LOGGING:
-                log.error(f'Ошибка декодирования JSON: {e}')
+                log.error(f'JSON decoding error: {e}')
 
     @backoff.on_exception(backoff.fibo, Exception, logger=log, max_value=10, backoff_log_level=logging.WARNING)
     def show_pair(self, ticker: str):

@@ -14,7 +14,7 @@ def get_middle(ticker_load):
     sell = float(data.get('sell'))
     middle = round((buy + sell) / 2, 10)
 
-    log.info(f'покупка: {buy}, продажа:{sell}, середина спрэда: {middle}')
+    log.info(f'buy: {buy}, sell:{sell}, mid-spread: {middle}')
 
     return middle
 
@@ -40,7 +40,7 @@ def get_order_id(order_resp):
     try:
         return order_resp['data']['id']
     except Exception as e:
-        log.exception(f'Не могу получить ID ордера - {order_resp}, ошибка - {e}')
+        log.exception(f"Can't get order status - {order_resp}, error - {e}")
         return None
 
 
@@ -51,7 +51,7 @@ def check_status(order_resp):
             return None
         return order_resp['data']['status']
     except Exception as e:
-        log.exception(f'Не могу получить статус ордера - {order_resp}, ошибка - {e}')
+        log.exception(f"Can't get order status - {order_resp}, error - {e}")
         return None
 
 
@@ -80,30 +80,30 @@ def wait_order_change(order, order_price):
             log.debug(check)
             pair = coinex.show_pair(TICKER)
         except ConnectionError as e:
-            log.exception(f'Ошибка соединения: {e}')
+            log.exception(f'Connection error: {e}')
             continue
         sell = get_best_sell(pair)
         buy = get_best_buy(pair)
         spread = spread_percent(pair)
         if not spread:
-            log.info(f'Не могу получить спред - spread, {cnt}')
+            log.info(f"Can't get spread - {cnt}")
             cnt += 1
             continue
 
-        info = f'{cnt} Ожидаю исполнения: моя цена {order_price},' \
-               f' лучший sell {sell}, ордер статус {check}, спрэд {spread}%'
+        info = f'{cnt} Waiting for execution: my price is {order_price},' \
+               f' best sell {sell}, order status {check}, spread {spread}%'
         log.info(info)
         if cnt % 60 == 0:
             log.warning(info)
         cnt += 1
         if check == 'done' or check == 'cancel':
-            log.warning(f'Ордер #{order_id} исполнен! {datetime.now()}')
+            log.warning(f'Order #{order_id} filled! {datetime.now()}')
             return
         elif DIRECTION == 'sell' and sell < order_price:
-            log.warning('Цена сдвинулась ниже ордера')
+            log.warning('The price moved below the order')
             return
         elif DIRECTION == 'buy' and buy > order_price:
-            log.warning('Цена сдвинулась выше ордера')
+            log.warning('The price moved above the order')
             return
 
 
@@ -114,7 +114,7 @@ def is_balance_empty():
         if balance['code'] == 227:
             exit()
         if balance['code'] == 0:
-            log.warning(f' Баланс: {balance["data"]}')
+            log.warning(f'  Balance: {balance["data"]}')
             if DIRECTION == 'sell':
                 amount = float(balance['data']['EMC']['available'])
             else:
@@ -130,7 +130,7 @@ def main_loop():
 
         while True:
             if is_balance_empty():
-                log.error('Баланс исчерпан!')
+                log.error('The funds have been exhausted. Top up your balance!')
                 time.sleep(60)
             else:
                 break
@@ -143,13 +143,13 @@ def main_loop():
             if DIRECTION == 'sell' and is_price_above(mid_price):
                 cnt_s += 1
                 if cnt_s > 60:
-                    log.warning(f'Цена({mid_price}) продажи ниже целевого значения: {BORDER_PRICE}')
+                    log.warning(f'Sell price({mid_price}) below threshold: {BORDER_PRICE}')
                     cnt_s = 0
 
             elif DIRECTION == 'buy' and not is_price_above(mid_price):
                 cnt_b += 1
                 if cnt_b > 60:
-                    log.warning(f'Цена({mid_price}) покупки выше порогового значения: {BORDER_PRICE}')
+                    log.warning(f'Buy price({mid_price}) above threshold: {BORDER_PRICE}')
                     cnt_b = 0
             else:
                 break
@@ -160,7 +160,7 @@ def main_loop():
                  'side': DIRECTION
                  }
         my_order = coinex.place_limit_order(**order)
-        log.warning(f'Выставлен ордер - {order}')
+        log.warning(f'Order placed - {order}')
 
         wait_order_change(order=my_order, order_price=mid_price)
 
