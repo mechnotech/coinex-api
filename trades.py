@@ -36,23 +36,23 @@ def get_best_buy(ticker_load):
         return float(data.get('buy'))
 
 
+def check_error(response):
+    if response['code'] == 227:
+        log.exception(response['message'])
+        exit()
+    if not response['data']:
+        log.exception(f'Error code {response["code"]}, {response["message"]}')
+    return None
+
+
 def get_order_id(order_resp):
-    try:
-        return order_resp['data']['id']
-    except Exception as e:
-        log.exception(f"Can't get order status - {order_resp}, error - {e}")
-        return None
+    check_error(order_resp)
+    return order_resp['data']['id']
 
 
 def check_status(order_resp):
-    try:
-        if not order_resp['data']:
-            log.exception(f'Error code {order_resp["code"]}, {order_resp["message"]}')
-            return None
-        return order_resp['data']['status']
-    except Exception as e:
-        log.exception(f"Can't get order status - {order_resp}, error - {e}")
-        return None
+    check_error(order_resp)
+    return order_resp['data']['status']
 
 
 def spread_percent(ticker_load):

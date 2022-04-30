@@ -36,21 +36,13 @@ auth_soc = {
 
 subscribe_soc = {
     "method": "depth.subscribe",
-    "params": [
-        "EMCUSDT", 1, '0'
-    ],
+    "params": ["EMCUSDT", 1, '0'],
     "id": 114775
 }
 
 orders_soc = {
   "method": "order.account_query",
-  "params": [
-    0,
-    "EMCUSDT",
-    0,
-    0,
-    10
-  ],
+  "params": [0, "EMCUSDT", 0, 0, 10],
   "id": 65744
 }
 
