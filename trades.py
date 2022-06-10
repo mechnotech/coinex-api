@@ -21,7 +21,7 @@ def get_middle(ticker_load):
 
 def get_amount():
     r = random.randint(10000000, 15000000)
-    return r / 200000
+    return r / 100000
 
 
 def get_best_sell(ticker_load):
